@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de Motores Industriais | v1.0.0</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        industrial: {
+                            950: '#060a12',
+                            900: '#0b1120',
+                            850: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Efeito sutil de grid industrial no fundo */
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, rgba(30, 41, 59, 0.35) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(30, 41, 59, 0.35) 1px, transparent 1px);
+            background-size: 36px 36px;
+        }
+        /* Scrollbar personalizada para o bloco de código */
+        pre::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        pre::-webkit-scrollbar-track {
+            background: #0b1120;
+            border-radius: 8px;
+        }
+        pre::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 8px;
+        }
+        pre::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-industrial-950 text-slate-200 font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+
+    <!-- Navbar Fixa -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-industrial-950/85 border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <i data-lucide="cpu" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <span class="font-bold text-white tracking-tight text-sm sm:text-base">INDUS<span class="text-cyan-400">TELEMETRY</span></span>
+                    <span class="ml-2 px-2 py-0.5 text-xs font-mono font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-full">v1.0.0</span>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400">
+                <a href="#telemetria" class="hover:text-cyan-400 transition-colors">Painel Ao Vivo</a>
+                <a href="#parametros" class="hover:text-cyan-400 transition-colors">Parâmetros</a>
+                <a href="#arquitetura" class="hover:text-cyan-400 transition-colors">Arquitetura</a>
+                <a href="#codigo-fonte" class="hover:text-cyan-400 transition-colors">Código Python</a>
+            </nav>
+
+            <a href="https://github.com/usuario/monitoramento-motores-industriais" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium border border-slate-700 transition-all shadow-sm">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/></svg>
+                <span>Repositório</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- 1. HERO SECTION -->
+    <section class="relative overflow-hidden bg-grid-pattern border-b border-slate-800/80">
+        <div class="absolute inset-0 bg-gradient-to-b from-cyan-500/5 via-transparent to-industrial-950 pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 relative">
+            <div class="max-w-3xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-mono mb-6">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                    <span>SISTEMA DE TELEMETRIA & MANUTENÇÃO PREVENTIVA • v1.0.0</span>
+                </div>
+
+                <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-5">
+                    Monitoramento de <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Motores Industriais</span>
+                </h1>
+
+                <p class="text-base sm:text-lg text-slate-400 leading-relaxed mb-8">
+                    Solução de supervisão operacional desenvolvida em Python para aquisição, validação e diagnóstico multicritério de ativos rotativos. Identifique anomalias térmicas, elétricas e mecânicas antes que evoluam para paradas não programadas na planta industrial.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    <a href="https://github.com/usuario/monitoramento-motores-industriais" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-sm sm:text-base shadow-lg shadow-cyan-500/25 transition-all">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/></svg>
+                        <span>Acessar Repositório Oficial no GitHub</span>
+                    </a>
+                    <a href="#telemetria"
+                       class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-sm sm:text-base border border-slate-700 transition-all">
+                        <i data-lucide="activity" class="w-4 h-4 text-cyan-400"></i>
+                        <span>Explorar Painel ao Vivo</span>
+                    </a>
+                </div>
+                <p class="mt-3 text-xs text-slate-500 flex items-center gap-1.5">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-cyan-500"></i>
+                    Repositório oficial com código-fonte Python puro, sem dependências externas obrigatórias.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-20">
+
+        <!-- 2. PAINEL INTERATIVO DE TELEMETRIA -->
+        <section id="telemetria" class="space-y-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-800 pb-5">
+                <div>
+                    <div class="flex items-center gap-2 text-cyan-400 font-mono text-xs uppercase tracking-wider mb-1">
+                        <i data-lucide="radio" class="w-4 h-4"></i>
+                        <span>Simulação Executável da Lógica Python</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Painel Interativo de Telemetria</h2>
+                    <p class="text-slate-400 text-sm mt-1">
+                        Processamento em tempo real replicando fielmente as funções <code class="text-cyan-300 font-mono text-xs bg-slate-900 px-1.5 py-0.5 rounded">analisar_alertas()</code>, <code class="text-cyan-300 font-mono text-xs bg-slate-900 px-1.5 py-0.5 rounded">calcular_estatisticas()</code> e <code class="text-cyan-300 font-mono text-xs bg-slate-900 px-1.5 py-0.5 rounded">gerar_plano_manutencao()</code>.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="timestamp-display" class="text-xs font-mono text-slate-400 bg-slate-900 border border-slate-800 px-3 py-2 rounded-lg">
+                        Leitura: --/--/---- --:--:--
+                    </span>
+                    <button onclick="resetarDados()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 border border-slate-700 transition-colors" title="Restaurar leituras originais do script">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                        <span>Restaurar Padrão</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPIs / Estatísticas Gerais -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="bg-industrial-900 border border-slate-800 rounded-xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-2">
+                        <span>TOTAL DE MOTORES</span>
+                        <i data-lucide="server" class="w-4 h-4 text-cyan-400"></i>
+                    </div>
+                    <div id="kpi-total" class="text-2xl sm:text-3xl font-extrabold text-white font-mono">4</div>
+                    <div class="text-xs text-slate-500 mt-1">Ativos validados</div>
+                </div>
+
+                <div class="bg-industrial-900 border border-slate-800 rounded-xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-2">
+                        <span>TEMP. MÉDIA</span>
+                        <i data-lucide="thermometer" class="w-4 h-4 text-amber-400"></i>
+                    </div>
+                    <div id="kpi-temp" class="text-2xl sm:text-3xl font-extrabold text-white font-mono">72.58 °C</div>
+                    <div class="text-xs text-slate-500 mt-1">Limite máx: 80.0 °C</div>
+                </div>
+
+                <div class="bg-industrial-900 border border-slate-800 rounded-xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-2">
+                        <span>CORRENTE MÉDIA</span>
+                        <i data-lucide="zap" class="w-4 h-4 text-cyan-400"></i>
+                    </div>
+                    <div id="kpi-corrente" class="text-2xl sm:text-3xl font-extrabold text-white font-mono">15.70 A</div>
+                    <div class="text-xs text-slate-500 mt-1">Limite máx: 18.5 A</div>
+                </div>
+
+                <div class="bg-industrial-900 border border-slate-800 rounded-xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-2">
+                        <span>POTÊNCIA TOTAL</span>
+                        <i data-lucide="gauge" class="w-4 h-4 text-emerald-400"></i>
+                    </div>
+                    <div id="kpi-potencia" class="text-2xl sm:text-3xl font-extrabold text-white font-mono">31.5 kW</div>
+                    <div class="text-xs text-slate-500 mt-1">Carga instalada</div>
+                </div>
+
+                <div class="col-span-2 lg:col-span-1 bg-industrial-900 border border-slate-800 rounded-xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-2">
+                        <span>MAIOR TEMPERATURA</span>
+                        <i data-lucide="flame" class="w-4 h-4 text-rose-500"></i>
+                    </div>
+                    <div id="kpi-quente" class="text-2xl sm:text-3xl font-extrabold text-rose-400 font-mono">MTR-02</div>
+                    <div id="kpi-quente-sub" class="text-xs text-slate-500 mt-1">84.7 °C (Usinagem)</div>
+                </div>
+            </div>
+
+            <!-- Grid de Motores Monitorados -->
+            <div>
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+                    <i data-lucide="layout-grid" class="w-4 h-4 text-cyan-400"></i>
+                    <span>Leituras Individuais dos Motores</span>
+                </h3>
+                <div id="motores-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Renderizado dinamicamente via JS -->
+                </div>
+            </div>
+
+            <!-- Plano de Manutenção Preventiva -->
+            <div class="bg-industrial-900 border border-slate-800 rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i data-lucide="wrench" class="w-5 h-5 text-cyan-400"></i>
+                            <span>Plano de Manutenção Preventiva</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Triagem automática gerada por <code class="font-mono text-cyan-300">gerar_plano_manutencao(motores)</code></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- CRÍTICO -->
+                    <div class="rounded-xl bg-rose-950/25 border border-rose-500/30 p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-400">
+                                <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                                Parada Imediata (CRÍTICO)
+                            </span>
+                            <span id="count-critico" class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">0</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-3">2 ou mais parâmetros violados simultaneamente.</p>
+                        <div id="plano-critico" class="flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <!-- ATENÇÃO -->
+                    <div class="rounded-xl bg-amber-950/25 border border-amber-500/30 p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400">
+                                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                                Inspeção Programada (ATENÇÃO)
+                            </span>
+                            <span id="count-atencao" class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">0</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-3">Exatamente 1 parâmetro acima/fora da faixa operacional.</p>
+                        <div id="plano-atencao" class="flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <!-- NORMAL -->
+                    <div class="rounded-xl bg-emerald-950/20 border border-emerald-500/30 p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                Operação Estável (NORMAL)
+                            </span>
+                            <span id="count-normal" class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">0</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-3">Todos os sensores dentro dos limites nominais.</p>
+                        <div id="plano-normal" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulador / Editor Interativo de Leituras -->
+            <div class="bg-gradient-to-br from-slate-900 to-industrial-900 border border-cyan-500/30 rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
+                    <div>
+                        <span class="text-xs font-mono uppercase tracking-wider text-cyan-400">Sandbox de Testes</span>
+                        <h3 class="text-lg font-bold text-white">Simulador de Leitura & Validação</h3>
+                        <p class="text-xs text-slate-400">Edite um motor existente ou adicione uma nova leitura para testar a regra de negócio e a função <code class="font-mono text-cyan-300">validar_leitura()</code>.</p>
+                    </div>
+                </div>
+
+                <form id="simulador-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-3 items-end">
+                    <div class="lg:col-span-1">
+                        <label class="block text-xs font-medium text-slate-400 mb-1">ID Motor</label>
+                        <input type="text" id="input-id" value="MTR-05" required
+                               class="w-full px-3 py-2 rounded-lg bg-industrial-950 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-cyan-500">
+                    </div>
+                    <div class="lg:col-span-2">
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Setor</label>
+                        <input type="text" id="input-setor" value="Prensas" required
+                               class="w-full px-3 py-2 rounded-lg bg-industrial-950 border border-slate-700 text-white text-sm focus:outline-none focus:border-cyan-500">
+                    </div>
+                    <div class="lg:col-span-1">
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Temp (°C)</label>
+                        <input type="number" step="0.1" id="input-temp" value="82.5" required
+                               class="w-full px-3 py-2 rounded-lg bg-industrial-950 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-cyan-500">
+                    </div>
+                    <div class="lg:col-span-1">
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Corr (A)</label>
+                        <input type="number" step="0.1" id="input-corr" value="16.4" required
+                               class="w-full px-3 py-2 rounded-lg bg-industrial-950 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-cyan-500">
+                    </div>
+                    <div class="lg:col-span-1">
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Vib (mm/s)</label>
+                        <input type="number" step="0.1" id="input-vib" value="3.2" required
+                               class="w-full px-3 py-2 rounded-lg bg-industrial-950 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-cyan-500">
+                    </div>
+                    <div class="lg:col-span-1">
+                        <label class="block text-xs font-medium text-slate-400 mb-1">RPM</label>
+                        <input type="number" step="1" id="input-rpm" value="1720" required
+                               class="w-full px-3 py-2 rounded-lg bg-industrial-950 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-cyan-500">
+                    </div>
+                    <div class="lg:col-span-1">
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Pot (kW)</label>
+                        <input type="number" step="0.1" id="input-pot" value="9.2" required
+                               class="w-full px-3 py-2 rounded-lg bg-industrial-950 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-cyan-500">
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-8 flex flex-wrap items-center justify-between gap-3 pt-2">
+                        <div id="simulador-feedback" class="text-xs font-medium text-slate-400">
+                            Dica: Digite o ID de um motor existente (ex: <code class="text-cyan-400">MTR-02</code>) para atualizar seus dados ou um novo ID para adicionar.
+                        </div>
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm transition-colors shadow-md shadow-cyan-500/20">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                            <span>Processar Leitura</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- 3. PARÂMETROS MONITORADOS & LIMITES OPERACIONAIS -->
+        <section id="parametros" class="space-y-6">
+            <div class="border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-2 text-cyan-400 font-mono text-xs uppercase tracking-wider mb-1">
+                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                    <span>Dicionário <code class="text-cyan-300">LIMITES</code> & Engenharia</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white">Parâmetros Monitorados & Limites Operacionais</h2>
+                <p class="text-slate-400 text-sm mt-1">Referências técnicas configuradas no sistema para detecção precoce de falhas eletromecânicas.</p>
+            </div>
+
+            <div class="overflow-x-auto bg-industrial-900 border border-slate-800 rounded-2xl">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 bg-slate-950/60 text-xs font-mono uppercase text-slate-400">
+                            <th class="py-4 px-5">Parâmetro</th>
+                            <th class="py-4 px-5">Chave Python</th>
+                            <th class="py-4 px-5">Limite / Faixa</th>
+                            <th class="py-4 px-5">Unidade</th>
+                            <th class="py-4 px-5">Impacto Técnico & Diagnóstico</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/80 text-sm">
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="py-4 px-5 font-semibold text-white flex items-center gap-2.5">
+                                <span class="p-2 rounded-lg bg-rose-500/10 text-rose-400"><i data-lucide="thermometer" class="w-4 h-4"></i></span>
+                                Temperatura Máxima
+                            </td>
+                            <td class="py-4 px-5 font-mono text-xs text-cyan-300">temperatura_max</td>
+                            <td class="py-4 px-5 font-mono font-bold text-rose-400">&le; 80.0</td>
+                            <td class="py-4 px-5 font-mono text-slate-400">°C</td>
+                            <td class="py-4 px-5 text-slate-300">Risco de degradação térmica do verniz de isolamento dos enrolamentos do estator e falha de lubrificação.</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="py-4 px-5 font-semibold text-white flex items-center gap-2.5">
+                                <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400"><i data-lucide="zap" class="w-4 h-4"></i></span>
+                                Corrente Máxima
+                            </td>
+                            <td class="py-4 px-5 font-mono text-xs text-cyan-300">corrente_max</td>
+                            <td class="py-4 px-5 font-mono font-bold text-amber-400">&le; 18.5</td>
+                            <td class="py-4 px-5 font-mono text-slate-400">A (Ampères)</td>
+                            <td class="py-4 px-5 text-slate-300">Indica sobrecarga mecânica no eixo, subtensão na rede ou desequilíbrio entre fases, elevando perdas por efeito Joule.</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="py-4 px-5 font-semibold text-white flex items-center gap-2.5">
+                                <span class="p-2 rounded-lg bg-purple-500/10 text-purple-400"><i data-lucide="activity" class="w-4 h-4"></i></span>
+                                Vibração Máxima
+                            </td>
+                            <td class="py-4 px-5 font-mono text-xs text-cyan-300">vibracao_max</td>
+                            <td class="py-4 px-5 font-mono font-bold text-purple-400">&le; 4.5</td>
+                            <td class="py-4 px-5 font-mono text-slate-400">mm/s (RMS)</td>
+                            <td class="py-4 px-5 text-slate-300">Sinal clássico de desalinhamento de acoplamento, desbalanceamento de rotor, folga estrutural ou desgaste em rolamentos.</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="py-4 px-5 font-semibold text-white flex items-center gap-2.5">
+                                <span class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400"><i data-lucide="refresh-cw" class="w-4 h-4"></i></span>
+                                Rotação Operacional
+                            </td>
+                            <td class="py-4 px-5 font-mono text-xs text-cyan-300">rpm_min / rpm_max</td>
+                            <td class="py-4 px-5 font-mono font-bold text-cyan-400">1400 – 1800</td>
+                            <td class="py-4 px-5 font-mono text-slate-400">RPM</td>
+                            <td class="py-4 px-5 text-slate-300">Garante estabilidade de escorregamento em motores de indução de 4 polos (60 Hz) e controle de carga no processo.</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="py-4 px-5 font-semibold text-white flex items-center gap-2.5">
+                                <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400"><i data-lucide="battery-charging" class="w-4 h-4"></i></span>
+                                Potência Nominal
+                            </td>
+                            <td class="py-4 px-5 font-mono text-xs text-cyan-300">potencia_kw</td>
+                            <td class="py-4 px-5 font-mono font-bold text-emerald-400">&gt; 0.0</td>
+                            <td class="py-4 px-5 font-mono text-slate-400">kW</td>
+                            <td class="py-4 px-5 text-slate-300">Dimensionamento da capacidade instalada ativa da linha de produção para balanço energético da planta.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 4. EXPLICAÇÃO TÉCNICA DA ARQUITETURA -->
+        <section id="arquitetura" class="space-y-6">
+            <div class="border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-2 text-cyan-400 font-mono text-xs uppercase tracking-wider mb-1">
+                    <i data-lucide="layers" class="w-4 h-4"></i>
+                    <span>Pipeline de Processamento</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white">Explicação Técnica da Arquitetura</h2>
+                <p class="text-slate-400 text-sm mt-1">O software foi estruturado em 4 camadas funcionais desacopladas para facilitar testes unitários e integração com sensores IoT/CLP.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Etapa 1 -->
+                <div class="bg-industrial-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 font-mono font-bold text-sm flex items-center justify-center">01</span>
+                        <h3 class="text-lg font-bold text-white">Camada de Validação & Sanitização</h3>
+                    </div>
+                    <div class="mb-3">
+                        <code class="text-xs font-mono text-cyan-300 bg-slate-950 px-2.5 py-1 rounded border border-slate-800">validar_leitura() • obter_leituras_validas()</code>
+                    </div>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Atua como barreira de integridade na entrada do pipeline. Verifica a presença obrigatória das 7 chaves do payload (<code class="text-slate-300">id, setor, temperatura, corrente, vibracao, rpm, potencia_kw</code>), rejeita valores nulos (<code class="text-slate-300">None</code>) e filtra anomalias de leitura de sensor (como grandezas físicas negativas), garantindo que dados corrompidos não distorçam as médias da planta.
+                    </p>
+                </div>
+
+                <!-- Etapa 2 -->
+                <div class="bg-industrial-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 font-mono font-bold text-sm flex items-center justify-center">02</span>
+                        <h3 class="text-lg font-bold text-white">Motor de Diagnóstico Multicritério</h3>
+                    </div>
+                    <div class="mb-3">
+                        <code class="text-xs font-mono text-cyan-300 bg-slate-950 px-2.5 py-1 rounded border border-slate-800">analisar_alertas(motor)</code>
+                    </div>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Avalia cada variável telemetrada frente ao dicionário <code class="text-slate-300">LIMITES</code> e classifica a severidade operacional pela contagem de violações simultâneas:
+                        <span class="block mt-2 text-xs font-mono text-slate-300">
+                            • 0 alertas &rarr; <span class="text-emerald-400">NORMAL</span><br>
+                            • 1 alerta &rarr; <span class="text-amber-400">ATENCAO</span><br>
+                            • &ge; 2 alertas &rarr; <span class="text-rose-400">CRITICO</span>
+                        </span>
+                    </p>
+                </div>
+
+                <!-- Etapa 3 -->
+                <div class="bg-industrial-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 font-mono font-bold text-sm flex items-center justify-center">03</span>
+                        <h3 class="text-lg font-bold text-white">Agregação e Indicadores (KPIs)</h3>
+                    </div>
+                    <div class="mb-3">
+                        <code class="text-xs font-mono text-cyan-300 bg-slate-950 px-2.5 py-1 rounded border border-slate-800">calcular_estatisticas(motores)</code>
+                    </div>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Consolida a visão macro da fábrica utilizando expressões geradoras (<code class="text-slate-300">sum()</code> e <code class="text-slate-300">max()</code> com função <code class="text-slate-300">lambda</code>). Calcula a média térmica e elétrica do parque de motores, soma a potência ativa total em kW e identifica automaticamente o ativo de maior estresse térmico (<code class="text-slate-300">motor_mais_quente</code>).
+                    </p>
+                </div>
+
+                <!-- Etapa 4 -->
+                <div class="bg-industrial-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 font-mono font-bold text-sm flex items-center justify-center">04</span>
+                        <h3 class="text-lg font-bold text-white">Triagem & Plano de Manutenção</h3>
+                    </div>
+                    <div class="mb-3">
+                        <code class="text-xs font-mono text-cyan-300 bg-slate-950 px-2.5 py-1 rounded border border-slate-800">gerar_plano_manutencao() • exibir_manutencao()</code>
+                    </div>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Converte diagnósticos técnicos em decisões de engenharia de manutenção. Agrupa os equipamentos por criticidade para orientar a equipe de campo entre <strong>Parada Imediata</strong> (risco iminente de quebra), <strong>Inspeção Programada</strong> (intervenção na próxima janela) e <strong>Operação Estável</strong>.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. CÓDIGO-FONTE PYTHON ORGANIZADO -->
+        <section id="codigo-fonte" class="space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                    <div class="flex items-center gap-2 text-cyan-400 font-mono text-xs uppercase tracking-wider mb-1">
+                        <i data-lucide="code-2" class="w-4 h-4"></i>
+                        <span>Implementação Refatorada • Python 3.8+</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Código-Fonte Python Organizado</h2>
+                    <p class="text-slate-400 text-sm mt-1">
+                        Código limpo com correção da indentação em <code class="text-cyan-300 font-mono text-xs">exibir_painel()</code> e unificação do ponto de entrada <code class="text-cyan-300 font-mono text-xs">if __name__ == "__main__":</code>.
+                    </p>
+                </div>
+
+                <button id="btn-copiar" onclick="copiarCodigoPython()"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium text-sm border border-slate-700 transition-all shadow-sm">
+                    <i id="icon-copiar" data-lucide="copy" class="w-4 h-4 text-cyan-400"></i>
+                    <span id="texto-copiar">Copiar Código</span>
+                </button>
+            </div>
+
+            <!-- Container do Editor de Código -->
+            <div class="rounded-2xl overflow-hidden border border-slate-800 bg-[#080d19] shadow-2xl">
+                <!-- Barra Superior Estilo IDE -->
+                <div class="flex items-center justify-between px-4 py-3 bg-slate-900/90 border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+                        <span class="ml-2 text-xs font-mono text-slate-400">monitoramento_motores.py</span>
+                    </div>
+                    <span class="text-xs font-mono text-slate-500">UTF-8 • Python 3</span>
+                </div>
+
+                <!-- Código com Numeração de Linhas e Syntax Highlighting -->
+                <div class="overflow-x-auto">
+                    <pre class="p-4 sm:p-6 text-xs sm:text-sm font-mono leading-relaxed text-slate-200"><code id="python-code-block"></code></pre>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 6. RODAPÉ -->
+    <footer class="border-t border-slate-800/80 bg-industrial-900/50 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                    <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-white">Monitoramento de Motores Industriais <span class="text-cyan-400 font-mono text-xs ml-1">v1.0.0</span></p>
+                    <p class="text-xs text-slate-500">Telemetria Industrial & Engenharia de Manutenção Preventiva</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6 text-xs text-slate-400">
+                <a href="https://github.com/usuario/monitoramento-motores-industriais" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2 text-slate-300 hover:text-cyan-400 transition-colors font-medium">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/></svg>
+                    <span>github.com/usuario/monitoramento-motores-industriais</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Textarea oculto auxiliar para fallback de cópia em iframes -->
+    <textarea id="clipboard-helper" class="sr-only" aria-hidden="true"></textarea>
+
+    <script>
+        // =========================================================================
+        // 1. CONSTANTES E DADOS INICIAIS (Réplica exata do código Python)
+        // =========================================================================
+        const SISTEMA_NOME = "Monitoramento de Motores Industriais";
+        const VERSAO = "1.0.0";
+
+        const LIMITES = {
+            temperatura_max: 80.0,
+            corrente_max: 18.5,
+            vibracao_max: 4.5,
+            rpm_min: 1400,
+            rpm_max: 1800,
+        };
+
+        const LEITURAS_INICIAIS = [
+            { id: "MTR-01", setor: "Estamparia", temperatura: 68.4, corrente: 14.2, vibracao: 2.1, rpm: 1750, potencia_kw: 7.5 },
+            { id: "MTR-02", setor: "Usinagem",   temperatura: 84.7, corrente: 19.3, vibracao: 5.2, rpm: 1690, potencia_kw: 11.0 },
+            { id: "MTR-03", setor: "Bobinagem",  temperatura: 76.2, corrente: 17.8, vibracao: 4.7, rpm: 1520, potencia_kw: 5.5 },
+            { id: "MTR-04", setor: "Pintura",    temperatura: 61.0, corrente: 11.5, vibracao: 1.8, rpm: 1780, potencia_kw: 7.5 },
+        ];
+
+        let leiturasMotores = JSON.parse(JSON.stringify(LEITURAS_INICIAIS));
+
+        // =========================================================================
+        // 2. REGRAS DE NEGÓCIO EM JAVASCRIPT (Espelhando as funções Python)
+        // =========================================================================
+        function validarLeitura(motor) {
+            const camposObrigatorios = ["id", "setor", "temperatura", "corrente", "vibracao", "rpm", "potencia_kw"];
+            for (const campo of camposObrigatorios) {
+                if (!(campo in motor) || motor[campo] === null || motor[campo] === undefined || motor[campo] === "") {
+                    return false;
+                }
+            }
+            if (motor.temperatura < 0 || motor.corrente < 0 || motor.vibracao < 0 || motor.rpm < 0 || motor.potencia_kw < 0) {
+                return false;
+            }
+            return true;
+        }
+
+        function obterLeiturasValidas(listaMotores) {
+            return listaMotores.filter(m => validarLeitura(m));
+        }
+
+        function analisarAlertas(motor) {
+            const alertas = [];
+            if (motor.temperatura > LIMITES.temperatura_max) {
+                alertas.push(`Superaquecimento (${motor.temperatura.toFixed(1)} °C)`);
+            }
+            if (motor.corrente > LIMITES.corrente_max) {
+                alertas.push(`Sobrecorrente (${motor.corrente.toFixed(1)} A)`);
+            }
+            if (motor.vibracao > LIMITES.vibracao_max) {
+                alertas.push(`Vibração elevada (${motor.vibracao.toFixed(1)} mm/s)`);
+            }
+            if (motor.rpm < LIMITES.rpm_min || motor.rpm > LIMITES.rpm_max) {
+                alertas.push(`Rotação fora da faixa (${motor.rpm} RPM)`);
+            }
+
+            let status = "NORMAL";
+            if (alertas.length === 1) {
+                status = "ATENCAO";
+            } else if (alertas.length >= 2) {
+                status = "CRITICO";
+            }
+
+            return { status, alertas };
+        }
+
+        function calcularEstatisticas(motores) {
+            const total = motores.length;
+            if (total === 0) return null;
+
+            const tempMedia = motores.reduce((acc, m) => acc + m.temperatura, 0) / total;
+            const correnteMedia = motores.reduce((acc, m) => acc + m.corrente, 0) / total;
+            const potenciaTotal = motores.reduce((acc, m) => acc + m.potencia_kw, 0);
+            const maiorTemp = motores.reduce((prev, curr) => (curr.temperatura > prev.temperatura ? curr : prev), motores[0]);
+
+            return {
+                total_motores: total,
+                temperatura_media: tempMedia.toFixed(2),
+                corrente_media: correnteMedia.toFixed(2),
+                potencia_total_kw: potenciaTotal.toFixed(1),
+                motor_mais_quente: maiorTemp,
+            };
+        }
+
+        function gerarPlanoManutencao(motores) {
+            const plano = { CRITICO: [], ATENCAO: [], NORMAL: [] };
+            for (const motor of motores) {
+                const { status, alertas } = analisarAlertas(motor);
+                plano[status].push({
+                    id: motor.id,
+                    setor: motor.setor,
+                    ocorrencias: alertas.length
+                });
+            }
+            return plano;
+        }
+
+        // =========================================================================
+        // 3. RENDERIZAÇÃO DA INTERFACE DO PAINEL
+        // =========================================================================
+        function atualizarTimestamp() {
+            const agora = new Date();
+            const dataStr = agora.toLocaleDateString('pt-BR');
+            const horaStr = agora.toLocaleTimeString('pt-BR');
+            document.getElementById('timestamp-display').textContent = `Leitura: ${dataStr} ${horaStr}`;
+        }
+
+        function renderizarPainel() {
+            atualizarTimestamp();
+            const motoresValidos = obterLeiturasValidas(leiturasMotores);
+            const stats = calcularEstatisticas(motoresValidos);
+            const plano = gerarPlanoManutencao(motoresValidos);
+
+            // Atualizar KPIs
+            if (stats) {
+                document.getElementById('kpi-total').textContent = stats.total_motores;
+                document.getElementById('kpi-temp').textContent = `${stats.temperatura_media} °C`;
+                document.getElementById('kpi-corrente').textContent = `${stats.corrente_media} A`;
+                document.getElementById('kpi-potencia').textContent = `${stats.potencia_total_kw} kW`;
+                document.getElementById('kpi-quente').textContent = stats.motor_mais_quente.id;
+                document.getElementById('kpi-quente-sub').textContent = `${stats.motor_mais_quente.temperatura.toFixed(1)} °C (${stats.motor_mais_quente.setor})`;
+            }
+
+            // Renderizar Cards dos Motores
+            const grid = document.getElementById('motores-grid');
+            grid.innerHTML = '';
+
+            motoresValidos.forEach(motor => {
+                const { status, alertas } = analisarAlertas(motor);
+
+                const estilosStatus = {
+                    NORMAL: {
+                        border: 'border-slate-800 hover:border-emerald-500/40',
+                        badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+                        dot: 'bg-emerald-400',
+                        label: 'NORMAL'
+                    },
+                    ATENCAO: {
+                        border: 'border-amber-500/40 hover:border-amber-400/60',
+                        badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+                        dot: 'bg-amber-400',
+                        label: 'ATENÇÃO'
+                    },
+                    CRITICO: {
+                        border: 'border-rose-500/50 hover:border-rose-400/80 shadow-lg shadow-rose-950/20',
+                        badge: 'bg-rose-500/15 text-rose-400 border-rose-500/40',
+                        dot: 'bg-rose-500 animate-ping',
+                        label: 'CRÍTICO'
+                    }
+                }[status];
+
+                const tempAlert = motor.temperatura > LIMITES.temperatura_max;
+                const corrAlert = motor.corrente > LIMITES.corrente_max;
+                const vibAlert  = motor.vibracao > LIMITES.vibracao_max;
+                const rpmAlert  = motor.rpm < LIMITES.rpm_min || motor.rpm > LIMITES.rpm_max;
+
+                const alertasHtml = alertas.length > 0
+                    ? `<div class="mt-4 pt-3 border-t border-slate-800/80 space-y-1.5">
+                        ${alertas.map(a => `
+                            <div class="flex items-center gap-2 text-xs font-medium ${status === 'CRITICO' ? 'text-rose-300' : 'text-amber-300'}">
+                                <i data-lucide="alert-triangle" class="w-3.5 h-3.5 shrink-0"></i>
+                                <span>${a}</span>
+                            </div>
+                        `).join('')}
+                       </div>`
+                    : `<div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center gap-2 text-xs text-emerald-400/90">
+                        <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                        <span>Parâmetros nominais dentro da faixa segura</span>
+                       </div>`;
+
+                const card = document.createElement('div');
+                card.className = `bg-industrial-900 border ${estilosStatus.border} rounded-2xl p-5 transition-all`;
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-3 mb-4">
+                        <div>
+                            <div class="flex items-center gap-2.5">
+                                <span class="font-mono font-bold text-lg text-white">${motor.id}</span>
+                                <span class="text-xs px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300 font-medium">${motor.setor}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 font-mono mt-0.5">Potência Nominal: ${motor.potencia_kw.toFixed(1)} kW</p>
+                        </div>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold border ${estilosStatus.badge}">
+                            <span class="w-1.5 h-1.5 rounded-full ${estilosStatus.dot}"></span>
+                            ${estilosStatus.label}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <div class="p-2.5 rounded-xl bg-slate-950/70 border ${tempAlert ? 'border-rose-500/40' : 'border-slate-800/80'}">
+                            <span class="block text-[11px] text-slate-400">Temperatura</span>
+                            <span class="font-mono font-bold text-sm ${tempAlert ? 'text-rose-400' : 'text-white'}">${motor.temperatura.toFixed(1)} °C</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950/70 border ${corrAlert ? 'border-rose-500/40' : 'border-slate-800/80'}">
+                            <span class="block text-[11px] text-slate-400">Corrente</span>
+                            <span class="font-mono font-bold text-sm ${corrAlert ? 'text-rose-400' : 'text-white'}">${motor.corrente.toFixed(1)} A</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950/70 border ${vibAlert ? 'border-amber-500/40' : 'border-slate-800/80'}">
+                            <span class="block text-[11px] text-slate-400">Vibração</span>
+                            <span class="font-mono font-bold text-sm ${vibAlert ? 'text-amber-400' : 'text-white'}">${motor.vibracao.toFixed(1)} mm/s</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950/70 border ${rpmAlert ? 'border-amber-500/40' : 'border-slate-800/80'}">
+                            <span class="block text-[11px] text-slate-400">Rotação</span>
+                            <span class="font-mono font-bold text-sm ${rpmAlert ? 'text-amber-400' : 'text-white'}">${motor.rpm} RPM</span>
+                        </div>
+                    </div>
+
+                    ${alertasHtml}
+                `;
+                grid.appendChild(card);
+            });
+
+            // Atualizar Plano de Manutenção
+            document.getElementById('count-critico').textContent = plano.CRITICO.length;
+            document.getElementById('count-atencao').textContent = plano.ATENCAO.length;
+            document.getElementById('count-normal').textContent  = plano.NORMAL.length;
+
+            renderizarBadgesPlano('plano-critico', plano.CRITICO, 'bg-rose-500/20 text-rose-200 border-rose-500/40');
+            renderizarBadgesPlano('plano-atencao', plano.ATENCAO, 'bg-amber-500/20 text-amber-200 border-amber-500/40');
+            renderizarBadgesPlano('plano-normal',  plano.NORMAL,  'bg-emerald-500/20 text-emerald-200 border-emerald-500/40');
+
+            // Reinicializar ícones Lucide nos elementos recém-criados
+            lucide.createIcons();
+        }
+
+        function renderizarBadgesPlano(containerId, lista, badgeClasses) {
+            const container = document.getElementById(containerId);
+            if (lista.length === 0) {
+                container.innerHTML = `<span class="text-xs text-slate-500 italic">Nenhum motor nesta categoria</span>`;
+                return;
+            }
+            container.innerHTML = lista.map(item => `
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold border ${badgeClasses}">
+                    ${item.id} <span class="opacity-75 font-sans font-normal">(${item.setor})</span>
+                </span>
+            `).join('');
+        }
+
+        // Evento do Formulário Simulador
+        document.getElementById('simulador-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const feedback = document.getElementById('simulador-feedback');
+
+            const novoMotor = {
+                id: document.getElementById('input-id').value.trim().toUpperCase(),
+                setor: document.getElementById('input-setor').value.trim(),
+                temperatura: parseFloat(document.getElementById('input-temp').value),
+                corrente: parseFloat(document.getElementById('input-corr').value),
+                vibracao: parseFloat(document.getElementById('input-vib').value),
+                rpm: parseInt(document.getElementById('input-rpm').value, 10),
+                potencia_kw: parseFloat(document.getElementById('input-pot').value)
+            };
+
+            if (!validarLeitura(novoMotor)) {
+                feedback.innerHTML = `<span class="text-rose-400 font-semibold">Erro em validar_leitura(): Valores negativos ou campos inválidos foram rejeitados!</span>`;
+                return;
+            }
+
+            const indexExistente = leiturasMotores.findIndex(m => m.id === novoMotor.id);
+            if (indexExistente >= 0) {
+                leiturasMotores[indexExistente] = novoMotor;
+                feedback.innerHTML = `<span class="text-cyan-400 font-semibold">Motor ${novoMotor.id} atualizado com sucesso e reavaliado!</span>`;
+            } else {
+                leiturasMotores.push(novoMotor);
+                feedback.innerHTML = `<span class="text-emerald-400 font-semibold">Leitura ${novoMotor.id} validada e adicionada ao painel!</span>`;
+            }
+
+            renderizarPainel();
+        });
+
+        function resetarDados() {
+            leiturasMotores = JSON.parse(JSON.stringify(LEITURAS_INICIAIS));
+            document.getElementById('simulador-feedback').innerHTML = `Leituras originais restauradas para os 4 motores padrão.`;
+            renderizarPainel();
+        }
+
+        // =========================================================================
+        // 4. CÓDIGO-FONTE PYTHON REFATORADO & SYNTAX HIGHLIGHTING
+        // =========================================================================
+        const CODIGO_PYTHON_LIMPO = `from datetime import datetime
+
+SISTEMA_NOME = "Monitoramento de Motores Industriais"
+VERSAO = "1.0.0"
+
+LIMITES = {
+    "temperatura_max": 80.0,
+    "corrente_max": 18.5,
+    "vibracao_max": 4.5,
+    "rpm_min": 1400,
+    "rpm_max": 1800,
+}
+
+LEITURAS_MOTORES = [
+    {"id": "MTR-01", "setor": "Estamparia", "temperatura": 68.4, "corrente": 14.2, "vibracao": 2.1, "rpm": 1750, "potencia_kw": 7.5},
+    {"id": "MTR-02", "setor": "Usinagem",   "temperatura": 84.7, "corrente": 19.3, "vibracao": 5.2, "rpm": 1690, "potencia_kw": 11.0},
+    {"id": "MTR-03", "setor": "Bobinagem",  "temperatura": 76.2, "corrente": 17.8, "vibracao": 4.7, "rpm": 1520, "potencia_kw": 5.5},
+    {"id": "MTR-04", "setor": "Pintura",    "temperatura": 61.0, "corrente": 11.5, "vibracao": 1.8, "rpm": 1780, "potencia_kw": 7.5},
+]
+
+
+def validar_leitura(motor):
+    campos_obrigatorios = ["id", "setor", "temperatura", "corrente", "vibracao", "rpm", "potencia_kw"]
+    for campo in campos_obrigatorios:
+        if campo not in motor or motor[campo] is None:
+            return False
+    if motor["temperatura"] < 0 or motor["corrente"] < 0 or motor["vibracao"] < 0 or motor["rpm"] < 0:
+        return False
+    return True
+
+
+def obter_leituras_validas(lista_motores):
+    return [m for m in lista_motores if validar_leitura(m)]
+
+
+def analisar_alertas(motor):
+    alertas = []
+    if motor["temperatura"] > LIMITES["temperatura_max"]:
+        alertas.append(f"Superaquecimento ({motor['temperatura']:.1f} C)")
+    if motor["corrente"] > LIMITES["corrente_max"]:
+        alertas.append(f"Sobrecorrente ({motor['corrente']:.1f} A)")
+    if motor["vibracao"] > LIMITES["vibracao_max"]:
+        alertas.append(f"Vibracao elevada ({motor['vibracao']:.1f} mm/s)")
+    if motor["rpm"] < LIMITES["rpm_min"] or motor["rpm"] > LIMITES["rpm_max"]:
+        alertas.append(f"Rotacao fora da faixa ({motor['rpm']} RPM)")
+
+    if len(alertas) == 0:
+        status = "NORMAL"
+    elif len(alertas) == 1:
+        status = "ATENCAO"
+    else:
+        status = "CRITICO"
+
+    return status, alertas
+
+
+def calcular_estatisticas(motores):
+    total = len(motores)
+    if total == 0:
+        return {}
+
+    temp_media = sum(m["temperatura"] for m in motores) / total
+    corrente_media = sum(m["corrente"] for m in motores) / total
+    potencia_total = sum(m["potencia_kw"] for m in motores)
+    maior_temp = max(motores, key=lambda m: m["temperatura"])
+
+    return {
+        "total_motores": total,
+        "temperatura_media": round(temp_media, 2),
+        "corrente_media": round(corrente_media, 2),
+        "potencia_total_kw": round(potencia_total, 2),
+        "motor_mais_quente": maior_temp["id"],
+    }
+
+
+def exibir_painel(motores):
+    print("=" * 64)
+    print(f"{SISTEMA_NOME} - v{VERSAO}")
+    print(f"Data/Hora da leitura: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print("=" * 64)
+
+    for motor in motores:
+        status, alertas = analisar_alertas(motor)
+        print(
+            f"[{status:<7}] {motor['id']} ({motor['setor']}) | "
+            f"Temp: {motor['temperatura']} C | Corr: {motor['corrente']} A | "
+            f"Vib: {motor['vibracao']} mm/s | RPM: {motor['rpm']}"
+        )
+        for alerta in alertas:
+            print(f"  -> Alerta: {alerta}")
+
+    stats = calcular_estatisticas(motores)
+    print("-" * 64)
+    print(
+        f"Resumo: {stats['total_motores']} motores | "
+        f"Temp. media: {stats['temperatura_media']} C | "
+        f"Corr. media: {stats['corrente_media']} A | "
+        f"Potencia total: {stats['potencia_total_kw']} kW | "
+        f"Maior temp.: {stats['motor_mais_quente']}"
+    )
+    print("=" * 64)
+
+
+def gerar_plano_manutencao(motores):
+    plano = {"CRITICO": [], "ATENCAO": [], "NORMAL": []}
+    for motor in motores:
+        status, alertas = analisar_alertas(motor)
+        plano[status].append({
+            "id": motor["id"],
+            "setor": motor["setor"],
+            "ocorrencias": len(alertas)
+        })
+    return plano
+
+
+def exibir_manutencao(motores):
+    plano = gerar_plano_manutencao(motores)
+    print("\\nPLANO DE MANUTENCAO PREVENTIVA:")
+    print(f" - Parada imediata (CRITICO): {[m['id'] for m in plano['CRITICO']]}")
+    print(f" - Inspecao programada (ATENCAO): {[m['id'] for m in plano['ATENCAO']]}")
+    print(f" - Operacao estavel (NORMAL): {[m['id'] for m in plano['NORMAL']]}")
+
+
+if __name__ == "__main__":
+    motores_validos = obter_leituras_validas(LEITURAS_MOTORES)
+    exibir_painel(motores_validos)
+    exibir_manutencao(motores_validos)`;
+
+        function renderizarCodigoPython() {
+            const container = document.getElementById('python-code-block');
+            const linhas = CODIGO_PYTHON_LIMPO.split('\n');
+
+            const htmlLinhas = linhas.map((linha, idx) => {
+                const numLinha = String(idx + 1).padStart(3, ' ');
+                // Escapar HTML
+                let formatada = linha
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+
+                // Syntax Highlighting leve e seguro
+                formatada = formatada
+                    .replace(/(f?"[^"]*"|f?'[^']*')/g, '<span class="text-amber-300">$1</span>')
+                    .replace(/\b(from|import|def|for|in|if|elif|else|return|or|and|not|lambda)\b/g, '<span class="text-cyan-400 font-semibold">$1</span>')
+                    .replace(/\b(True|False|None)\b/g, '<span class="text-rose-400 font-semibold">$1</span>')
+                    .replace(/\b(print|len|sum|max|round|datetime)\b/g, '<span class="text-emerald-400">$1</span>')
+                    .replace(/\b(\d+\.?\d*)\b/g, '<span class="text-purple-400">$1</span>');
+
+                return `<div class="table-row hover:bg-slate-800/40"><span class="table-cell select-none pr-5 text-right text-slate-600">${numLinha}</span><span class="table-cell whitespace-pre">${formatada}</span></div>`;
+            }).join('');
+
+            container.innerHTML = htmlLinhas;
+        }
+
+        function copiarCodigoPython() {
+            const helper = document.getElementById('clipboard-helper');
+            helper.value = CODIGO_PYTHON_LIMPO;
+            helper.select();
+            helper.setSelectionRange(0, 99999);
+
+            try {
+                document.execCommand('copy');
+                const btn = document.getElementById('btn-copiar');
+                const texto = document.getElementById('texto-copiar');
+                const icon = document.getElementById('icon-copiar');
+
+                btn.classList.remove('bg-slate-800', 'text-white', 'border-slate-700');
+                btn.classList.add('bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/40');
+                texto.textContent = 'Copiado!';
+                icon.setAttribute('data-lucide', 'check');
+                lucide.createIcons();
+
+                setTimeout(() => {
+                    btn.classList.add('bg-slate-800', 'text-white', 'border-slate-700');
+                    btn.classList.remove('bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/40');
+                    texto.textContent = 'Copiar Código';
+                    icon.setAttribute('data-lucide', 'copy');
+                    lucide.createIcons();
+                }, 2200);
+            } catch (err) {
+                console.error('Falha ao copiar código:', err);
+            }
+        }
+
+        // Inicialização
+        window.addEventListener('DOMContentLoaded', () => {
+            renderizarCodigoPython();
+            renderizarPainel();
+        });
+    </script>
+</body>
+</html>
